@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Personalized Music Time Capsule<</title>
+</head>
+<body>
+
+<h1>Personalized Music Time Capsule</h1>
+
+<form action="/home/" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Create Playlist!">
+</form>
+
+</body>
+</html>

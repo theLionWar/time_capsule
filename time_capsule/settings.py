@@ -10,6 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+import environ
+env = environ.Env(
+    DEBUG=(bool, True)
+)
+
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -37,6 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'social_django',
+    'playlist_creation',
 ]
 
 MIDDLEWARE = [
@@ -47,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
 ROOT_URLCONF = 'time_capsule.urls'
@@ -62,10 +70,33 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
 ]
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.spotify.SpotifyOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+    'playlist_creation.services.create_playlist_in_target_social_pipeline',
+)
+
+SOCIAL_AUTH_SPOTIFY_SCOPE = ['playlist-modify-public']
+
 
 WSGI_APPLICATION = 'time_capsule.wsgi.application'
 
@@ -123,3 +154,12 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SOCIAL_AUTH_URL_NAMESPACE = 'social'
+LOGIN_REDIRECT_URL = 'thank_you'
+
+SOCIAL_AUTH_SPOTIFY_KEY = '68946c4a10cc44b6ba7a650fa28ebf4b'
+SOCIAL_AUTH_SPOTIFY_SECRET = env('SOCIAL_AUTH_SPOTIFY_SECRET')
+
+LASTFM_API_KEY = '7a7e0754c3ca603c221a61ca0ba03ef7'
+LASTFM_SHARED_SECRET = env('LASTFM_SHARED_SECRET')
