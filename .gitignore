@@ -25,6 +25,7 @@ media
 .idea/**/gradle.xml
 .idea/**/libraries
 *.iws /out/
+.DS_Store
 
 # Python #
 *.py[cod]
