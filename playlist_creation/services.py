@@ -11,25 +11,27 @@ from playlist_creation.models import Playlist, Track
 
 logger = logging.getLogger(__name__)
 
+TRACKS_LIMIT_PER_PLAYLIST = 50
+
 
 @dataclass
 class TracksProvider(abc.ABC):
 
     @abc.abstractmethod
-    def get_tracks(self, provider_user_id: str, from_date: date, to_date: date) -> list:
+    def get_tracks(self, provider_user_id: str, from_date: date, to_date: date, limit: int = 10) -> list:
         ...
 
 
 @dataclass
 class LastFMTracksProvider(TracksProvider):
 
-    def get_tracks(self, provider_user_id: str, from_date: date, to_date: date) -> list:
+    def get_tracks(self, provider_user_id: str, from_date: date, to_date: date, limit: int = 10) -> list:
         lastfm_network = pylast.LastFMNetwork(api_key=settings.LASTFM_API_KEY, api_secret=settings.LASTFM_SHARED_SECRET)
         lastfm_user = pylast.User(user_name=provider_user_id, network=lastfm_network)
 
         from_date = datetime.combine(from_date, datetime.min.time())
         to_date = datetime.combine(to_date, datetime.min.time())
-        tracks = lastfm_user.get_recent_tracks(cacheable=False, time_from=int(datetime.timestamp(from_date)),
+        tracks = lastfm_user.get_recent_tracks(cacheable=False, limit=limit, time_from=int(datetime.timestamp(from_date)),
                                                time_to=int(datetime.timestamp(to_date)))
 
         return [(track.track.artist.name, track.track.title) for track in tracks]
@@ -74,7 +76,8 @@ class SpotifyPlaylistTargetService(PlaylistTargetService):
 
 
 def create_playlist_in_target(target: PlaylistTargetService, provider: TracksProvider, playlist: Playlist) -> bool:
-    tracks: list = provider.get_tracks(playlist.source_username, playlist.from_date, playlist.to_date)
+    tracks: list = provider.get_tracks(playlist.source_username, playlist.from_date, playlist.to_date,
+                                       limit=TRACKS_LIMIT_PER_PLAYLIST)
 
     for track in tracks:
         track_obj: Track
