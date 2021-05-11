@@ -35,9 +35,13 @@ class PlaylistCreationForm(forms.Form):
         SPRING: (DateWithoutYear(1, 3), DateWithoutYear(31, 5)),
     }
 
-    season = forms.ChoiceField(label='Pick a season', choices=SEASONS)
-    year = forms.TypedChoiceField(label='Pick a year', coerce=int, choices=year_choices, initial=2012)
-    lastfm_username = forms.CharField(label='Last.fm username')
+    season = forms.ChoiceField(label='Pick a season', choices=SEASONS,
+                               widget=forms.Select(attrs={'class': 'form-control'}))
+    year = forms.TypedChoiceField(label='Pick a year', coerce=int, choices=year_choices, initial=2012,
+                                  widget=forms.Select(attrs={'class': 'form-control'}))
+    lastfm_username = forms.CharField(label='Last.fm username',
+                                      widget=forms.TextInput(attrs={'class': 'form-control',
+                                                                    'placeholder': 'Last.fm username'}))
 
     def clean_lastfm_username(self):
         lastfm_username = self.cleaned_data['lastfm_username']
