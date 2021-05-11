@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Personalized Music Time Capsule {% endblock title %}<</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.2/css/bootstrap.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="{% static 'playlist_creation/style.css' %}">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" crossorigin="anonymous"></script>
+</head>
+<body class="main-bg">
+
+        <div class="login-container text-c animated flipInX">
+                <div>
+                    <h1 class="logo-badge text-whitesmoke"><span class="fa fa-user-circle"></span></h1>
+                </div>
+                <h3 class="text-whitesmoke">{% block main_title %}Home{% endblock main_title %}</h3>
+                <p class="text-whitesmoke">{% block second_title %}{% endblock second_title %}</p>
+
+                <div class="container-content">
+                    {% block main_content %}{% endblock %}
+                    {% block footer %}
+                    <p class="margin-t text-whitesmoke"><small> Time Capsule &copy; 2021</small> </p>
+                    {% endblock footer %}
+                </div>
+        </div>
+
+</body>
+</html>

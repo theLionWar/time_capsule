@@ -1,45 +1,23 @@
-<!DOCTYPE html>
-{% load static %}
+{% extends 'base.html' %}
 
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Personalized Music Time Capsule<</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.2/css/bootstrap.min.css" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous">
-    <link rel="stylesheet" type="text/css" href="{% static 'playlist_creation/style.css' %}">
+{% block main_title %}Personalized Music Time Capsule{% endblock main_title %}
+{% block second_title %}Create your nostalgic playlist{% endblock second_title %}
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" crossorigin="anonymous"></script>
-</head>
-<body class="main-bg">
-
-        <div class="login-container text-c animated flipInX">
-                <div>
-                    <h1 class="logo-badge text-whitesmoke"><span class="fa fa-user-circle"></span></h1>
+{% block main_content %}
+        <form class="margin-t" action="/home/" method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    {{ field }}
                 </div>
-                    <h3 class="text-whitesmoke">Personalized Music Time Capsule</h3>
-                    <p class="text-whitesmoke">Create your nostalgic playlist</p>
-                <div class="container-content">
-                    <form class="margin-t" action="/home/" method="post">
-                        {% csrf_token %}
-                        {% for field in form %}
-                            <div class="form-group">
-                                {{ field }}
-                            </div>
-                        {% endfor %}
-                        <button type="submit" class="form-button button-l margin-b">Create Playlist!</button>
+            {% endfor %}
+            <button type="submit" class="form-button button-l margin-b">Create Playlist!</button>
 
-                        {% comment %}
-                            <a class="text-darkyellow" href="#"><small>Forgot your password?</small></a>
-                            <p class="text-whitesmoke text-center"><small>Do not have an account?</small></p>
-                            <a class="text-darkyellow" href="#"><small>Sign Up</small></a>
-                        {% endcomment %}
+            {% comment %}
+                <a class="text-darkyellow" href="#"><small>Forgot your password?</small></a>
+                <p class="text-whitesmoke text-center"><small>Do not have an account?</small></p>
+                <a class="text-darkyellow" href="#"><small>Sign Up</small></a>
+            {% endcomment %}
 
-                    </form>
-                    <p class="margin-t text-whitesmoke"><small> Time Capsule &copy; 2021</small> </p>
-                </div>
-            </div>
-
-</body>
-</html>
+        </form>
+{% endblock %}
