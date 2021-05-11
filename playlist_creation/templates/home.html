@@ -1,18 +1,49 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Personalized Music Time Capsule<</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-<h1>Personalized Music Time Capsule</h1>
+{% block main_title %}Personalized Music Time Capsule{% endblock main_title %}
+{% block second_title %}Create your nostalgic playlist{% endblock second_title %}
 
-<form action="/home/" method="post">
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="Create Playlist!">
-</form>
+{% block main_content %}
+        <form class="margin-t" action="/home/" method="post" onsubmit="event.preventDefault(); show_preloader(this);">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    {{ field }}
+                </div>
+            {% endfor %}
+            <button type="submit" class="form-button button-l margin-b">Create Playlist!</button>
 
-</body>
-</html>
+            {% comment %}
+                <a class="text-darkyellow" href="#"><small>Forgot your password?</small></a>
+                <p class="text-whitesmoke text-center"><small>Do not have an account?</small></p>
+                <a class="text-darkyellow" href="#"><small>Sign Up</small></a>
+            {% endcomment %}
+
+        </form>
+{% endblock %}
+
+{% block end_of_body %}
+
+<script>
+
+    const loader = '<div class="loading">' +
+            '<div class="loading-text">' +
+                '<span class="loading-text-words">C</span>' +
+                '<span class="loading-text-words">R</span>' +
+                '<span class="loading-text-words">E</span>' +
+                '<span class="loading-text-words">A</span>' +
+                '<span class="loading-text-words">T</span>' +
+                '<span class="loading-text-words">I</span>' +
+                '<span class="loading-text-words">N</span>' +
+                '<span class="loading-text-words">G</span>' +
+            '</div>' +
+        '</div>'
+
+    const show_preloader = form => {
+        form.submit();
+        form.remove()
+        $('.container-content').prepend(loader);
+    }
+</script>
+
+{% endblock %}

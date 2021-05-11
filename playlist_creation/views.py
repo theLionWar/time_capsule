@@ -19,4 +19,4 @@ def home(request):
 
 
 def thank_you(request):
-    return HttpResponse('Thank you!')
+    return render(request, 'thank_you.html')
