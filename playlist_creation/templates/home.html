@@ -4,7 +4,7 @@
 {% block second_title %}Create your nostalgic playlist{% endblock second_title %}
 
 {% block main_content %}
-        <form class="margin-t" action="/home/" method="post">
+        <form class="margin-t" action="/home/" method="post" onsubmit="event.preventDefault(); show_preloader(this);">
             {% csrf_token %}
             {% for field in form %}
                 <div class="form-group">
@@ -20,4 +20,30 @@
             {% endcomment %}
 
         </form>
+{% endblock %}
+
+{% block end_of_body %}
+
+<script>
+
+    const loader = '<div class="loading">' +
+            '<div class="loading-text">' +
+                '<span class="loading-text-words">C</span>' +
+                '<span class="loading-text-words">R</span>' +
+                '<span class="loading-text-words">E</span>' +
+                '<span class="loading-text-words">A</span>' +
+                '<span class="loading-text-words">T</span>' +
+                '<span class="loading-text-words">I</span>' +
+                '<span class="loading-text-words">N</span>' +
+                '<span class="loading-text-words">G</span>' +
+            '</div>' +
+        '</div>'
+
+    const show_preloader = form => {
+        form.submit();
+        form.remove()
+        $('.container-content').prepend(loader);
+    }
+</script>
+
 {% endblock %}
