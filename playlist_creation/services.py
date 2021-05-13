@@ -5,13 +5,18 @@ import logging
 import pylast
 import tekore as tk
 from django.conf import settings
-from social_core.exceptions import AuthFailed
+from social_core.exceptions import AuthException
 
 from playlist_creation.models import Playlist, Track
 
 logger = logging.getLogger(__name__)
 
 TRACKS_LIMIT_PER_PLAYLIST = 50
+
+
+@dataclass
+class PlaylistCreationException(Exception):
+    message: str
 
 
 @dataclass
@@ -31,8 +36,18 @@ class LastFMTracksProvider(TracksProvider):
 
         from_date = datetime.combine(from_date, datetime.min.time())
         to_date = datetime.combine(to_date, datetime.min.time())
-        tracks = lastfm_user.get_recent_tracks(cacheable=False, limit=limit, time_from=int(datetime.timestamp(from_date)),
-                                               time_to=int(datetime.timestamp(to_date)))
+        try:
+            lastfm_user.get_registered()
+            tracks = lastfm_user.get_recent_tracks(cacheable=False, limit=limit,
+                                                   time_from=int(datetime.timestamp(from_date)),
+                                                   time_to=int(datetime.timestamp(to_date)))
+        except pylast.PyLastError:
+            logger.warning('Could not get Last.fm tracks for username ', extra={'lastfm_username': provider_user_id})
+            raise PlaylistCreationException(message=f'Could not get Last.fm tracks from username: {provider_user_id}')
+
+        if not tracks:
+            raise PlaylistCreationException(message=f'Could not get tracks from Last.fm user: {provider_user_id}'
+                                                    f' from the requested dates')
 
         return [(track.track.artist.name, track.track.title) for track in tracks]
 
@@ -49,6 +64,9 @@ class PlaylistTargetService(abc.ABC):
 class SpotifyPlaylistTargetService(PlaylistTargetService):
 
     def create_playlist(self, playlist: Playlist) -> bool:
+        if not playlist.tracks.all():
+            logger.warning('Playlist has no tracks', extra={'playlist_id': playlist.id})
+            raise Exception('Playlist has no tracks')
         social_user = playlist.user.social_auth.get(provider='spotify')
         access_token = social_user.extra_data.get('access_token')
         spotify = tk.Spotify(access_token)
@@ -68,8 +86,9 @@ class SpotifyPlaylistTargetService(PlaylistTargetService):
                     track.save()
                     spotify_track_uris.append(track_sp_uri)
                 except IndexError:
-                    # TODO: log this
-                    ...
+                    logger.info('could not find track in Spotify', extra={'artist': track.artist, 'title': track.title,
+                                                                          'track_id': track.id,
+                                                                          'playlist_id': playlist.id})
 
         spotify.playlist_add(playlist_id=spotify_playlist.id, uris=spotify_track_uris)
         return True
@@ -93,7 +112,7 @@ def create_playlist_in_target_social_pipeline(backend, user, response, *args, **
         playlist_id = kwargs['request'].session.pop('playlist')
     except KeyError:
         logger.warning('no playlist id in session during auth pipeline')
-        raise AuthFailed(backend)
+        raise AuthException(backend, 'Missing playlist in session, please try again')
 
     try:
         playlist = Playlist.objects.get(id=playlist_id)
@@ -102,9 +121,16 @@ def create_playlist_in_target_social_pipeline(backend, user, response, *args, **
         playlist.save()
     except Playlist.DoesNotExist:
         logger.warning('playlist not found during auth pipeline')
-        raise AuthFailed(backend)
+        raise AuthException(backend, 'Internal playlist was not found, please try again')
 
-    create_playlist_in_target(target=SpotifyPlaylistTargetService(), provider=LastFMTracksProvider(), playlist=playlist)
+    try:
+        create_playlist_in_target(target=SpotifyPlaylistTargetService(), provider=LastFMTracksProvider(),
+                                  playlist=playlist)
+    except PlaylistCreationException as e:
+        raise AuthException(backend, e.message)
+    except Exception as e:
+        logger.warning(e)
+        raise AuthException(backend, 'A general error occurred, please contact support')
 
     playlist.status = Playlist.FINISHED_CREATION
     playlist.save()

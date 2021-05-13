@@ -30,6 +30,10 @@ body {
     color: rgba(255, 235, 59, 0.432)
 }
 
+.text-darkred {
+    color: rgb(224, 0, 0)
+}
+
 /* Lines */
 
 .line-b {

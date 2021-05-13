@@ -20,7 +20,7 @@ from playlist_creation import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('home/', views.home, name='index'),
+    path('home/', views.home, name='home'),
     path('thank-you/', views.thank_you, name='thank_you'),
     path('', include('social_django.urls', namespace='social')),
 ]
