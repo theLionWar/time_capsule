@@ -54,7 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'social_django.middleware.SocialAuthExceptionMiddleware',
+    'playlist_creation.middleware.SocialAuthExceptionNotRaiseMiddleware',
 ]
 
 ROOT_URLCONF = 'time_capsule.urls'
@@ -157,6 +157,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
 LOGIN_REDIRECT_URL = 'thank_you'
+LOGIN_ERROR_URL = 'home'
+
 
 SOCIAL_AUTH_SPOTIFY_KEY = '68946c4a10cc44b6ba7a650fa28ebf4b'
 SOCIAL_AUTH_SPOTIFY_SECRET = env('SOCIAL_AUTH_SPOTIFY_SECRET')

@@ -1,6 +1,10 @@
 from dataclasses import dataclass
 from datetime import date
+
+import pylast
 from django import forms
+from django.conf import settings
+from django.core.exceptions import ValidationError
 
 from playlist_creation.models import Playlist
 
@@ -45,7 +49,15 @@ class PlaylistCreationForm(forms.Form):
 
     def clean_lastfm_username(self):
         lastfm_username = self.cleaned_data['lastfm_username']
-        # TODO: check that the lastfm user exists
+
+        lastfm_network = pylast.LastFMNetwork(api_key=settings.LASTFM_API_KEY, api_secret=settings.LASTFM_SHARED_SECRET)
+        lastfm_user = pylast.User(user_name=lastfm_username, network=lastfm_network)
+
+        try:
+            lastfm_user.get_registered()
+        except pylast.PyLastError:
+            raise ValidationError("Last.fm user doesn't exist")
+
         return lastfm_username
 
     def save(self):

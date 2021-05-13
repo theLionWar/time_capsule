@@ -1,4 +1,5 @@
-from django.http import HttpResponseRedirect, HttpResponse
+from django.contrib import messages
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
@@ -13,6 +14,12 @@ def home(request):
             playlist: Playlist = form.save()
             request.session['playlist'] = str(playlist.id)
             return HttpResponseRedirect(reverse('social:begin', args=('spotify', )))
+        else:
+            for field in form:
+                for error in field.errors:
+                    messages.error(request, error)
+            for error in form.non_field_errors():
+                messages.error(request, error)
     else:
         form = PlaylistCreationForm()
     return render(request, 'home.html', {'form': form})

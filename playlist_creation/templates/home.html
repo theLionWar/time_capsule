@@ -4,15 +4,23 @@
 {% block second_title %}Create your nostalgic playlist{% endblock second_title %}
 
 {% block main_content %}
+
         <form class="margin-t" action="/home/" method="post" onsubmit="event.preventDefault(); show_preloader(this);">
             {% csrf_token %}
+
+            {% if messages %}
+                {% for message in messages %}
+                    <h5 class="text-darkred">{{ message }}</h5>
+                {% endfor %}
+            {% endif %}
+
             {% for field in form %}
                 <div class="form-group">
                     {{ field }}
                 </div>
             {% endfor %}
-            <button type="submit" class="form-button button-l margin-b">Create Playlist!</button>
 
+            <button type="submit" class="form-button button-l margin-b">Create Playlist!</button>
             {% comment %}
                 <a class="text-darkyellow" href="#"><small>Forgot your password?</small></a>
                 <p class="text-whitesmoke text-center"><small>Do not have an account?</small></p>
@@ -41,7 +49,7 @@
 
     const show_preloader = form => {
         form.submit();
-        form.remove()
+        form.remove();
         $('.container-content').prepend(loader);
     }
 </script>
