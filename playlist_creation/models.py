@@ -38,6 +38,7 @@ class Playlist(UUIDModel, TimeStampMixin):
     from_date = fields.DateField(null=True, default=None)
     to_date = fields.DateField(null=True, default=None)
     status = fields.PositiveSmallIntegerField(choices=PLAYLIST_STATUS, default=INITIATED)
+    provider_urls = JSONField(default=dict)
 
     @property
     def name(self):

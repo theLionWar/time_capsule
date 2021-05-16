@@ -1,3 +1,9 @@
 {% extends 'base.html' %}
 
 {% block main_title %}Thank You!{% endblock main_title %}
+
+{% block second_title %}
+    {% if playlist_url %}
+        <a href="{{ playlist_url }}" target="_blank" rel="noopener">YOUR PLAYLIST</a>
+    {% endif %}
+{% endblock second_title %}

@@ -26,4 +26,10 @@ def home(request):
 
 
 def thank_you(request):
-    return render(request, 'thank_you.html')
+    playlist_url: str = None
+    try:
+        playlist_url = request.session.pop('playlist_url')
+    except KeyError:
+        ...
+
+    return render(request, 'thank_you.html', {'playlist_url': playlist_url})
