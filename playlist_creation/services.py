@@ -56,14 +56,14 @@ class LastFMTracksProvider(TracksProvider):
 class PlaylistTargetService(abc.ABC):
 
     @abc.abstractmethod
-    def create_playlist(self, playlist: Playlist) -> bool:
+    def create_playlist(self, playlist: Playlist) -> str:
         ...
 
 
 @dataclass
 class SpotifyPlaylistTargetService(PlaylistTargetService):
 
-    def create_playlist(self, playlist: Playlist) -> bool:
+    def create_playlist(self, playlist: Playlist) -> str:
         if not playlist.tracks.all():
             logger.warning('Playlist has no tracks', extra={'playlist_id': playlist.id})
             raise Exception('Playlist has no tracks')
@@ -72,6 +72,9 @@ class SpotifyPlaylistTargetService(PlaylistTargetService):
         spotify = tk.Spotify(access_token)
 
         spotify_playlist = spotify.playlist_create(user_id=social_user.uid, name=playlist.name)
+
+        playlist.provider_urls['spotify'] = spotify_playlist.external_urls['spotify']
+        playlist.save()
 
         spotify_track_uris = []
         for track in playlist.tracks.all():
@@ -91,10 +94,10 @@ class SpotifyPlaylistTargetService(PlaylistTargetService):
                                                                           'playlist_id': playlist.id})
 
         spotify.playlist_add(playlist_id=spotify_playlist.id, uris=spotify_track_uris)
-        return True
+        return playlist.provider_urls['spotify']
 
 
-def create_playlist_in_target(target: PlaylistTargetService, provider: TracksProvider, playlist: Playlist) -> bool:
+def create_playlist_in_target(target: PlaylistTargetService, provider: TracksProvider, playlist: Playlist) -> str:
     tracks: list = provider.get_tracks(playlist.source_username, playlist.from_date, playlist.to_date,
                                        limit=TRACKS_LIMIT_PER_PLAYLIST)
 
@@ -124,8 +127,8 @@ def create_playlist_in_target_social_pipeline(backend, user, response, *args, **
         raise AuthException(backend, 'Internal playlist was not found, please try again')
 
     try:
-        create_playlist_in_target(target=SpotifyPlaylistTargetService(), provider=LastFMTracksProvider(),
-                                  playlist=playlist)
+        playlist_url = create_playlist_in_target(target=SpotifyPlaylistTargetService(), provider=LastFMTracksProvider(),
+                                                 playlist=playlist)
     except PlaylistCreationException as e:
         raise AuthException(backend, e.message)
     except Exception as e:
@@ -134,3 +137,5 @@ def create_playlist_in_target_social_pipeline(backend, user, response, *args, **
 
     playlist.status = Playlist.FINISHED_CREATION
     playlist.save()
+
+    kwargs['request'].session['playlist_url'] = playlist_url

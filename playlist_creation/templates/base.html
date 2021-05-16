@@ -15,9 +15,11 @@
 <body class="main-bg">
 
         <div class="login-container text-c animated flipInX">
-                <div>
-                    <h1 class="logo-badge text-whitesmoke"><span class="fa fa-user-circle"></span></h1>
-                </div>
+                <a href="{% url 'home' %}">
+                    <div>
+                        <h1 class="logo-badge text-whitesmoke"><span class="fa fa-user-circle"></span></h1>
+                    </div>
+                </a>
                 <h3 class="text-whitesmoke">{% block main_title %}Home{% endblock main_title %}</h3>
                 <p class="text-whitesmoke">{% block second_title %}{% endblock second_title %}</p>
 

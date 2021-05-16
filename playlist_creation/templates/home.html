@@ -5,7 +5,7 @@
 
 {% block main_content %}
 
-        <form class="margin-t" action="/home/" method="post" onsubmit="event.preventDefault(); show_preloader(this);">
+        <form class="margin-t" action="{% url 'home' %}" method="post" onsubmit="event.preventDefault(); show_preloader(this);">
             {% csrf_token %}
 
             {% if messages %}
