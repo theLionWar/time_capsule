@@ -95,7 +95,7 @@ SOCIAL_AUTH_PIPELINE = (
     'playlist_creation.services.create_playlist_in_target_social_pipeline',
 )
 
-SOCIAL_AUTH_SPOTIFY_SCOPE = ['playlist-modify-public']
+SOCIAL_AUTH_SPOTIFY_SCOPE = ['playlist-modify-public', 'user-read-recently-played']
 
 
 WSGI_APPLICATION = 'time_capsule.wsgi.application'

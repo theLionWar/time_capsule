@@ -23,6 +23,7 @@ class PlaylistCreationException(Exception):
 
 @dataclass
 class TracksProvider(abc.ABC):
+    provider_user_id: str = None
 
     @property
     @classmethod
@@ -62,11 +63,27 @@ class LastFMTracksProvider(TracksProvider):
             logger.warning('Could not get Last.fm tracks for username ', extra={'lastfm_username': provider_user_id})
             raise PlaylistCreationException(message=f'Could not get Last.fm tracks from username: {provider_user_id}')
 
+        # TODO: rethink this exception when we support multiple source providers
         if not tracks:
             raise PlaylistCreationException(message=f'Could not get tracks from Last.fm user: {provider_user_id}'
                                                     f' from the requested dates')
 
         return [self._create_and_save_track(track.track.artist.name, track.track.title) for track in tracks]
+
+
+@dataclass
+class SpotifyTracksProvider(TracksProvider):
+    PROVIDER: ClassVar[MusicProviders] = MusicProviders.SPOTIFY
+
+    def create_tracks(self, provider_user_id: str, from_date: date, to_date: date, limit: int = 10) -> list[Track]:
+        access_token = provider_user_id
+        spotify = tk.Spotify(access_token)
+
+        to_date = datetime.combine(to_date, datetime.min.time())
+        tracks = spotify.playback_recently_played(before=int(datetime.timestamp(to_date)), limit=limit)
+
+        return [self._create_and_save_track(track.track.artists[0].name, tracks.items[0].track.title,
+                                            track.track.uri) for track in tracks.items]
 
 
 @dataclass
@@ -126,9 +143,8 @@ def create_playlist_in_target(target: PlaylistTargetService, providers: list[Tra
 
     tracks: dict[MusicProviders, list[Track]] = {provider.PROVIDER: [] for provider in providers}
     for provider in providers:
-        provider_user_id: str = playlist.source_providers[provider.PROVIDER]
-        new_tracks: list[Track] = provider.create_tracks(provider_user_id, playlist.from_date, playlist.to_date,
-                                                         limit=TRACKS_LIMIT_PER_PLAYLIST)
+        new_tracks: list[Track] = provider.create_tracks(provider.provider_user_id, playlist.from_date,
+                                                         playlist.to_date, limit=TRACKS_LIMIT_PER_PLAYLIST)
         tracks[provider.PROVIDER].extend(new_tracks)
 
     for provider_enum, provider_tracks in tracks.items():
@@ -145,9 +161,11 @@ def create_playlist_in_target_social_pipeline(backend, user, response, *args, **
         logger.warning('no playlist id in session during auth pipeline')
         raise AuthException(backend, 'Missing playlist in session, please try again')
 
+    social_user = user.social_auth.get(provider='spotify')
     try:
         playlist = Playlist.objects.get(id=playlist_id)
         playlist.user = user
+        playlist.source_providers[MusicProviders.SPOTIFY] = social_user.uid
         playlist.status = Playlist.STARTED_CREATION
         playlist.save()
     except Playlist.DoesNotExist:
@@ -155,7 +173,12 @@ def create_playlist_in_target_social_pipeline(backend, user, response, *args, **
         raise AuthException(backend, 'Internal playlist was not found, please try again')
 
     try:
-        source_providers: list[TracksProvider] = [LastFMTracksProvider(), ]
+        access_token = social_user.extra_data.get('access_token')
+
+        source_providers: list[TracksProvider] = [
+            LastFMTracksProvider(provider_user_id=playlist.source_providers[MusicProviders.LASTFM]),
+            SpotifyTracksProvider(provider_user_id=access_token)
+        ]
         playlist_url = create_playlist_in_target(target=SpotifyPlaylistTargetService(), providers=source_providers,
                                                  playlist=playlist)
     except PlaylistCreationException as e:

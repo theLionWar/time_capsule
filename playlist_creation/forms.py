@@ -73,6 +73,7 @@ class PlaylistCreationForm(forms.Form):
         to_month = self.SEASONS_TO_DATES_MAPPING[season][1].month
         to_date = date(day=to_day, month=to_month, year=year if season != self.WINTER else year + 1)
 
-        source_providers = {MusicProviders.LASTFM: lastfm_username}
+        source_providers = {MusicProviders.LASTFM: lastfm_username,
+                            MusicProviders.SPOTIFY: None}
 
         return Playlist.objects.create(source_providers=source_providers, from_date=from_date, to_date=to_date)
