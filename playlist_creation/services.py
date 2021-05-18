@@ -1,7 +1,6 @@
 import abc
 from datetime import date, datetime
 from dataclasses import dataclass
-from enum import Enum
 import logging
 from typing import ClassVar, Optional
 
@@ -10,22 +9,11 @@ import tekore as tk
 from django.conf import settings
 from social_core.exceptions import AuthException
 
-from playlist_creation.models import Playlist, Track
+from playlist_creation.models import Playlist, Track, MusicProviders, TrackPlaylist
 
 logger = logging.getLogger(__name__)
 
 TRACKS_LIMIT_PER_PLAYLIST = 50
-
-
-class MusicProviders(str, Enum):
-    SPOTIFY = 'spotify'
-    LASTFM = 'last.fm'
-
-    def __str__(self):
-        return str(self.value)
-
-    def __repr__(self):
-        return str(self.value)
 
 
 @dataclass
@@ -133,12 +121,19 @@ class SpotifyPlaylistTargetService(PlaylistTargetService):
         return playlist.provider_urls[self.PROVIDER]
 
 
-def create_playlist_in_target(target: PlaylistTargetService, provider: TracksProvider, playlist: Playlist) -> str:
-    tracks: list[Track] = provider.create_tracks(playlist.source_username, playlist.from_date, playlist.to_date,
-                                                 limit=TRACKS_LIMIT_PER_PLAYLIST)
+def create_playlist_in_target(target: PlaylistTargetService, providers: list[TracksProvider],
+                              playlist: Playlist) -> str:
 
-    for track in tracks:
-        track.playlists.add(playlist)
+    tracks: dict[MusicProviders, list[Track]] = {provider.PROVIDER: [] for provider in providers}
+    for provider in providers:
+        provider_user_id: str = playlist.source_providers[provider.PROVIDER]
+        new_tracks: list[Track] = provider.create_tracks(provider_user_id, playlist.from_date, playlist.to_date,
+                                                         limit=TRACKS_LIMIT_PER_PLAYLIST)
+        tracks[provider.PROVIDER].extend(new_tracks)
+
+    for provider_enum, provider_tracks in tracks.items():
+        for track in provider_tracks:
+            TrackPlaylist.objects.get_or_create(track=track, playlist=playlist, source_provider=provider_enum)
 
     return target.create_playlist(playlist)
 
@@ -160,7 +155,8 @@ def create_playlist_in_target_social_pipeline(backend, user, response, *args, **
         raise AuthException(backend, 'Internal playlist was not found, please try again')
 
     try:
-        playlist_url = create_playlist_in_target(target=SpotifyPlaylistTargetService(), provider=LastFMTracksProvider(),
+        source_providers: list[TracksProvider] = [LastFMTracksProvider(), ]
+        playlist_url = create_playlist_in_target(target=SpotifyPlaylistTargetService(), providers=source_providers,
                                                  playlist=playlist)
     except PlaylistCreationException as e:
         raise AuthException(backend, e.message)
