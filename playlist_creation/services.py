@@ -1,7 +1,10 @@
 import abc
 from datetime import date, datetime
 from dataclasses import dataclass
+from enum import Enum
 import logging
+from typing import ClassVar, Optional
+
 import pylast
 import tekore as tk
 from django.conf import settings
@@ -14,6 +17,17 @@ logger = logging.getLogger(__name__)
 TRACKS_LIMIT_PER_PLAYLIST = 50
 
 
+class MusicProviders(str, Enum):
+    SPOTIFY = 'spotify'
+    LASTFM = 'last.fm'
+
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self.value)
+
+
 @dataclass
 class PlaylistCreationException(Exception):
     message: str
@@ -22,15 +36,30 @@ class PlaylistCreationException(Exception):
 @dataclass
 class TracksProvider(abc.ABC):
 
+    @property
+    @classmethod
     @abc.abstractmethod
-    def get_tracks(self, provider_user_id: str, from_date: date, to_date: date, limit: int = 10) -> list:
+    def PROVIDER(cls) -> MusicProviders:
+        ...
+
+    def _create_and_save_track(self, artist: str, title: str, provider_track_id: Optional[str] = None) -> Track:
+        track, _ = Track.objects.get_or_create(artist=artist, title=title)
+        if provider_track_id:
+            track['provider_urls'][self.provider] = provider_track_id
+            track.save()
+        return track
+
+    @abc.abstractmethod
+    def create_tracks(self, provider_user_id: str, from_date: date, to_date: date,
+                      limit: int = 10) -> list[Track]:
         ...
 
 
 @dataclass
 class LastFMTracksProvider(TracksProvider):
+    PROVIDER: ClassVar[MusicProviders] = MusicProviders.LASTFM
 
-    def get_tracks(self, provider_user_id: str, from_date: date, to_date: date, limit: int = 10) -> list:
+    def create_tracks(self, provider_user_id: str, from_date: date, to_date: date, limit: int = 10) -> list[Track]:
         lastfm_network = pylast.LastFMNetwork(api_key=settings.LASTFM_API_KEY, api_secret=settings.LASTFM_SHARED_SECRET)
         lastfm_user = pylast.User(user_name=provider_user_id, network=lastfm_network)
 
@@ -49,11 +78,17 @@ class LastFMTracksProvider(TracksProvider):
             raise PlaylistCreationException(message=f'Could not get tracks from Last.fm user: {provider_user_id}'
                                                     f' from the requested dates')
 
-        return [(track.track.artist.name, track.track.title) for track in tracks]
+        return [self._create_and_save_track(track.track.artist.name, track.track.title) for track in tracks]
 
 
 @dataclass
 class PlaylistTargetService(abc.ABC):
+
+    @property
+    @classmethod
+    @abc.abstractmethod
+    def PROVIDER(cls) -> MusicProviders:
+        ...
 
     @abc.abstractmethod
     def create_playlist(self, playlist: Playlist) -> str:
@@ -62,6 +97,7 @@ class PlaylistTargetService(abc.ABC):
 
 @dataclass
 class SpotifyPlaylistTargetService(PlaylistTargetService):
+    PROVIDER: ClassVar[MusicProviders] = MusicProviders.SPOTIFY
 
     def create_playlist(self, playlist: Playlist) -> str:
         if not playlist.tracks.all():
@@ -73,19 +109,19 @@ class SpotifyPlaylistTargetService(PlaylistTargetService):
 
         spotify_playlist = spotify.playlist_create(user_id=social_user.uid, name=playlist.name)
 
-        playlist.provider_urls['spotify'] = spotify_playlist.external_urls['spotify']
+        playlist.provider_urls[self.PROVIDER] = spotify_playlist.external_urls[self.PROVIDER]
         playlist.save()
 
         spotify_track_uris = []
         for track in playlist.tracks.all():
-            if track.provider_urls.get('spotify'):
-                spotify_track_uris.append(track.provider_urls.get('spotify'))
+            if track.provider_urls.get(self.PROVIDER):
+                spotify_track_uris.append(track.provider_urls.get(self.PROVIDER))
             else:
                 track_sp_data = spotify.search(query=f'artist:{track.artist} track:{track.title}', types=('track', ))
                 try:
                     track_sp_uri = track_sp_data[0].items[0].uri
 
-                    track.provider_urls['spotify'] = track_sp_uri
+                    track.provider_urls[self.PROVIDER] = track_sp_uri
                     track.save()
                     spotify_track_uris.append(track_sp_uri)
                 except IndexError:
@@ -94,18 +130,15 @@ class SpotifyPlaylistTargetService(PlaylistTargetService):
                                                                           'playlist_id': playlist.id})
 
         spotify.playlist_add(playlist_id=spotify_playlist.id, uris=spotify_track_uris)
-        return playlist.provider_urls['spotify']
+        return playlist.provider_urls[self.PROVIDER]
 
 
 def create_playlist_in_target(target: PlaylistTargetService, provider: TracksProvider, playlist: Playlist) -> str:
-    tracks: list = provider.get_tracks(playlist.source_username, playlist.from_date, playlist.to_date,
-                                       limit=TRACKS_LIMIT_PER_PLAYLIST)
+    tracks: list[Track] = provider.create_tracks(playlist.source_username, playlist.from_date, playlist.to_date,
+                                                 limit=TRACKS_LIMIT_PER_PLAYLIST)
 
     for track in tracks:
-        track_obj: Track
-        track_obj, _ = Track.objects.get_or_create(artist=track[0], title=track[1])
-        track_obj.playlists.add(playlist)
-        track_obj.save()
+        track.playlists.add(playlist)
 
     return target.create_playlist(playlist)
 
