@@ -6,7 +6,7 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
-from playlist_creation.models import Playlist
+from playlist_creation.models import Playlist, MusicProviders
 
 
 @dataclass(frozen=True)
@@ -61,7 +61,7 @@ class PlaylistCreationForm(forms.Form):
         return lastfm_username
 
     def save(self):
-        source_username = self.cleaned_data['lastfm_username']
+        lastfm_username = self.cleaned_data['lastfm_username']
         season = int(self.cleaned_data['season'])
         year = self.cleaned_data['year']
 
@@ -73,4 +73,6 @@ class PlaylistCreationForm(forms.Form):
         to_month = self.SEASONS_TO_DATES_MAPPING[season][1].month
         to_date = date(day=to_day, month=to_month, year=year if season != self.WINTER else year + 1)
 
-        return Playlist.objects.create(source_username=source_username, from_date=from_date, to_date=to_date)
+        source_providers = {MusicProviders.LASTFM: lastfm_username}
+
+        return Playlist.objects.create(source_providers=source_providers, from_date=from_date, to_date=to_date)
