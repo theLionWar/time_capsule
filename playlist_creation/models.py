@@ -52,7 +52,7 @@ class Playlist(UUIDModel, TimeStampMixin):
         return f'Time Capsule: {str(self.from_date)} - {str(self.to_date)}'
 
     def __str__(self):
-        return f'{self.user.username}: {str(self.from_date)} - {str(self.to_date)}'
+        return f'{self.user.username if self.user else "no user"}: {str(self.from_date)} - {str(self.to_date)}'
 
 
 class Track(UUIDModel, TimeStampMixin):
