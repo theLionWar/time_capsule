@@ -9,6 +9,9 @@ from django.core.exceptions import ValidationError
 from playlist_creation.models import Playlist, MusicProviders
 
 
+OLDEST_VALID_YEAR = 2005
+
+
 @dataclass(frozen=True)
 class DateWithoutYear:
     day: str
@@ -16,7 +19,7 @@ class DateWithoutYear:
 
 
 def year_choices():
-    return [(r, r) for r in range(2005, date.today().year + 1)]
+    return [(r, r) for r in range(OLDEST_VALID_YEAR, date.today().year + 1)]
 
 
 class PlaylistCreationForm(forms.Form):
