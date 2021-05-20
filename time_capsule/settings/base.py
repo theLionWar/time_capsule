@@ -9,28 +9,40 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
+import os
 
 import environ
-env = environ.Env(
-    DEBUG=(bool, True)
-)
+env = environ.Env()
 
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+ROOT_DIR = BASE_DIR
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ebh&nuj(=&j#=q@v8f6*0awzaj_(9**esg8j3jwjvi80w44f8&'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG', default=False)
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 ALLOWED_HOSTS = []
+
+if 'ALLOWED_HOSTS' in os.environ:
+    hosts = os.environ['ALLOWED_HOSTS'].split(" ")
+    BASE_URL = "https://" + hosts[0]
+    for host in hosts:
+        host = host.strip()
+        if host:
+            ALLOWED_HOSTS.append(host)
+
+SECURE_SSL_REDIRECT = env.bool('SECURE_SSL_REDIRECT', default=False)
 
 
 # Application definition
@@ -104,12 +116,27 @@ WSGI_APPLICATION = 'time_capsule.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if "DATABASE_URL" in os.environ:  # pragma: no cover
+    # Enable database config through environment
+    DATABASES = {
+        # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
+        'default': env.db(),
     }
-}
+
+    # Make sure we use have all settings we need
+    # DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
+    DATABASES['default']['TEST'] = {'NAME': os.environ.get("DATABASE_TEST_NAME", None)}
+    DATABASES['default']['OPTIONS'] = {
+        'options': '-c search_path=gis,public,pg_catalog',
+        'sslmode': 'require',
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -144,10 +171,104 @@ USE_L10N = True
 
 USE_TZ = True
 
+LOGGING = {
+    'version': 1,
+    # Setting this to True may disable preexisting loggers, for eg. Celery
+    'disable_existing_loggers': False,
+    'formatters': {
+        'short': {
+            'format': '%(asctime)s %(levelname)-7s %(thread)-5d %(message)s',
+            'datefmt': '%H:%M:%S',
+        },
+        'verbose': {
+            'format': '%(asctime)s %(levelname)-7s %(thread)-5d %(name)s %(filename)s:%(lineno)s | %(funcName)s | %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'short',
+            'level': 'DEBUG',
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'email_backend': 'django.core.mail.backends.smtp.EmailBackend',
+            'class': 'django.utils.log.AdminEmailHandler',
+        },
+        # 'sentry': {
+        #     'level': 'ERROR',  # To capture more than ERROR, change to WARNING, INFO, etc.
+        #     'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+        #     'tags': {'custom-tag': 'x'},
+        # },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'django.template': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django': {
+            'handlers': ['console'],
+            'propagate': False,
+            'level': 'INFO',
+        },
+        'django.security.DisallowedHost': {
+            'handlers': [],
+            'propagate': False,
+        },
+        'suds': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'propagate': True,
+            'level': 'WARNING',
+        },
+        'factory.generate': {
+            'handlers': ['console'],
+            'propagate': True,
+            'level': 'WARNING',
+        },
+        'factory.containers': {
+            'handlers': ['console'],
+            'propagate': True,
+            'level': 'WARNING',
+        },
+        'raven': {
+            'level': 'INFO',
+            'handlers': ['console'],
+            'propagate': False,
+        },
+        # 'sentry.errors': {
+        #     'level': 'DEBUG',
+        #     'handlers': ['console'],
+        #     'propagate': False,
+        # },
+    },
+    'root': {
+        'level': 'DEBUG',
+        'handlers': ['console'],
+    }
+}
+
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
+STATIC_ROOT = os.path.join(ROOT_DIR, 'static')
 STATIC_URL = '/static/'
 
 # Default primary key field type
@@ -159,9 +280,8 @@ SOCIAL_AUTH_URL_NAMESPACE = 'social'
 LOGIN_REDIRECT_URL = 'thank_you'
 LOGIN_ERROR_URL = 'home'
 
-
-SOCIAL_AUTH_SPOTIFY_KEY = '68946c4a10cc44b6ba7a650fa28ebf4b'
+SOCIAL_AUTH_SPOTIFY_KEY = env('SOCIAL_AUTH_SPOTIFY_KEY')
 SOCIAL_AUTH_SPOTIFY_SECRET = env('SOCIAL_AUTH_SPOTIFY_SECRET')
 
-LASTFM_API_KEY = '7a7e0754c3ca603c221a61ca0ba03ef7'
+LASTFM_API_KEY = env('LASTFM_API_KEY')
 LASTFM_SHARED_SECRET = env('LASTFM_SHARED_SECRET')
