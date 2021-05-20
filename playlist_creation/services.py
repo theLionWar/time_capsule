@@ -22,7 +22,6 @@ class PlaylistCreationException(Exception):
     message: str
 
 
-@dataclass
 class TracksProvider(abc.ABC):
 
     @property
@@ -35,9 +34,11 @@ class TracksProvider(abc.ABC):
                                title: str,
                                provider_track_id: Optional[str] = None) \
             -> Track:
+
+        track: Track
         track, _ = Track.objects.get_or_create(artist=artist, title=title)
         if provider_track_id:
-            track['provider_urls'][self.provider] = provider_track_id
+            track.provider_urls[self.PROVIDER] = provider_track_id
             track.save()
         return track
 
@@ -87,7 +88,6 @@ class LastFMTracksProvider(TracksProvider):
         ]
 
 
-@dataclass
 class PlaylistTargetService(abc.ABC):
 
     @property
@@ -117,8 +117,9 @@ class SpotifyPlaylistTargetService(PlaylistTargetService):
         spotify_playlist = spotify.playlist_create(user_id=social_user.uid,
                                                    name=playlist.name)
 
-        playlist.provider_urls[self.PROVIDER] = \
+        playlist_external_url: str = \
             spotify_playlist.external_urls[self.PROVIDER]
+        playlist.provider_urls[self.PROVIDER] = playlist_external_url
         playlist.save()
 
         spotify_track_uris = []
@@ -146,7 +147,8 @@ class SpotifyPlaylistTargetService(PlaylistTargetService):
 
         spotify.playlist_add(playlist_id=spotify_playlist.id,
                              uris=spotify_track_uris)
-        return playlist.provider_urls[self.PROVIDER]
+
+        return playlist_external_url
 
 
 def create_playlist_in_target(target: PlaylistTargetService,

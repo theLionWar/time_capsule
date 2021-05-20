@@ -14,8 +14,8 @@ OLDEST_VALID_YEAR = 2005
 
 @dataclass(frozen=True)
 class DateWithoutYear:
-    day: str
-    month: str
+    day: int
+    month: int
 
 
 def year_choices():
