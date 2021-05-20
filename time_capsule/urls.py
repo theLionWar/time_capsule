@@ -24,5 +24,3 @@ urlpatterns = [
     path('thank-you/', views.thank_you, name='thank_you'),
     path('', include('social_django.urls', namespace='social')),
 ]
-
-

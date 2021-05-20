@@ -40,11 +40,13 @@ class Playlist(UUIDModel, TimeStampMixin):
         (FINISHED_CREATION, 'Finished creation'),
     ]
 
-    user = models.ForeignKey(User, related_name='playlists', null=True, on_delete=models.SET_NULL)
+    user = models.ForeignKey(User, related_name='playlists', null=True,
+                             on_delete=models.SET_NULL)
     source_providers = JSONField(default=dict)
     from_date = fields.DateField(null=True, default=None)
     to_date = fields.DateField(null=True, default=None)
-    status = fields.PositiveSmallIntegerField(choices=PLAYLIST_STATUS, default=INITIATED)
+    status = fields.PositiveSmallIntegerField(choices=PLAYLIST_STATUS,
+                                              default=INITIATED)
     provider_urls = JSONField(default=dict)
 
     @property
@@ -52,14 +54,16 @@ class Playlist(UUIDModel, TimeStampMixin):
         return f'Time Capsule: {str(self.from_date)} - {str(self.to_date)}'
 
     def __str__(self):
-        return f'{self.user.username if self.user else "no user"}: {str(self.from_date)} - {str(self.to_date)}'
+        return f'{self.user.username if self.user else "no user"}: ' \
+               f'{str(self.from_date)} - {str(self.to_date)}'
 
 
 class Track(UUIDModel, TimeStampMixin):
     artist = fields.CharField(max_length=256)
     title = fields.CharField(max_length=256)
     provider_urls = JSONField(default=dict)
-    playlists = models.ManyToManyField(Playlist, through='TrackPlaylist', related_name='tracks')
+    playlists = models.ManyToManyField(Playlist, through='TrackPlaylist',
+                                       related_name='tracks')
 
     def __str__(self):
         return f'{self.artist} - {self.title}'
@@ -68,7 +72,9 @@ class Track(UUIDModel, TimeStampMixin):
 class TrackPlaylist(models.Model):
     track = models.ForeignKey(Track, on_delete=models.CASCADE)
     playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE)
-    source_provider = models.CharField(max_length=256, choices=[(tag, tag.value) for tag in MusicProviders])
+    source_provider = models.CharField(max_length=256,
+                                       choices=[(tag, tag.value)
+                                                for tag in MusicProviders])
 
     class Meta:
         unique_together = ('track', 'playlist')

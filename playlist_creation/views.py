@@ -13,7 +13,8 @@ def home(request):
         if form.is_valid():
             playlist: Playlist = form.save()
             request.session['playlist'] = str(playlist.id)
-            return HttpResponseRedirect(reverse('social:begin', args=('spotify', )))
+            return HttpResponseRedirect(reverse('social:begin',
+                                                args=('spotify', )))
         else:
             for field in form:
                 for error in field.errors:

@@ -43,18 +43,26 @@ class PlaylistCreationForm(forms.Form):
     }
 
     season = forms.ChoiceField(label='Pick a season', choices=SEASONS,
-                               widget=forms.Select(attrs={'class': 'form-control'}))
-    year = forms.TypedChoiceField(label='Pick a year', coerce=int, choices=year_choices, initial=2012,
-                                  widget=forms.Select(attrs={'class': 'form-control'}))
+                               widget=forms.Select(attrs={'class':
+                                                          'form-control'}))
+    year = forms.TypedChoiceField(label='Pick a year', coerce=int,
+                                  choices=year_choices, initial=2012,
+                                  widget=forms.Select(
+                                      attrs={'class': 'form-control'}))
     lastfm_username = forms.CharField(label='Last.fm username',
-                                      widget=forms.TextInput(attrs={'class': 'form-control',
-                                                                    'placeholder': 'Last.fm username'}))
+                                      widget=forms.TextInput(
+                                          attrs={'class': 'form-control',
+                                                 'placeholder':
+                                                     'Last.fm username'}))
 
     def clean_lastfm_username(self):
         lastfm_username = self.cleaned_data['lastfm_username']
 
-        lastfm_network = pylast.LastFMNetwork(api_key=settings.LASTFM_API_KEY, api_secret=settings.LASTFM_SHARED_SECRET)
-        lastfm_user = pylast.User(user_name=lastfm_username, network=lastfm_network)
+        lastfm_network = \
+            pylast.LastFMNetwork(api_key=settings.LASTFM_API_KEY,
+                                 api_secret=settings.LASTFM_SHARED_SECRET)
+        lastfm_user = pylast.User(user_name=lastfm_username,
+                                  network=lastfm_network)
 
         try:
             lastfm_user.get_registered()
@@ -74,8 +82,13 @@ class PlaylistCreationForm(forms.Form):
 
         to_day = self.SEASONS_TO_DATES_MAPPING[season][1].day
         to_month = self.SEASONS_TO_DATES_MAPPING[season][1].month
-        to_date = date(day=to_day, month=to_month, year=year if season != self.WINTER else year + 1)
+
+        # adapt the year if Winter season was chosen
+        year = year if season != self.WINTER else year + 1
+
+        to_date = date(day=to_day, month=to_month, year=year)
 
         source_providers = {MusicProviders.LASTFM: lastfm_username}
 
-        return Playlist.objects.create(source_providers=source_providers, from_date=from_date, to_date=to_date)
+        return Playlist.objects.create(source_providers=source_providers,
+                                       from_date=from_date, to_date=to_date)
