@@ -37,6 +37,12 @@ jobs:
           POETRY_VIRTUALENVS_CREATE: false
 
       - name: Run tests
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          SOCIAL_AUTH_SPOTIFY_KEY: ${{ secrets.SOCIAL_AUTH_SPOTIFY_KEY }}
+          SOCIAL_AUTH_SPOTIFY_SECRET: ${{ secrets.SOCIAL_AUTH_SPOTIFY_SECRET }}
+          LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
+          LASTFM_SHARED_SECRET: ${{ secrets.LASTFM_SHARED_SECRET }}
         run: |
           pytest
       
