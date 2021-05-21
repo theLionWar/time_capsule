@@ -10,11 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
+from pathlib import Path
 
 import environ
 env = environ.Env()
-
-from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -119,13 +118,15 @@ WSGI_APPLICATION = 'time_capsule.wsgi.application'
 if "DATABASE_URL" in os.environ:  # pragma: no cover
     # Enable database config through environment
     DATABASES = {
-        # Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
+        # Raises ImproperlyConfigured exception if DATABASE_URL not in
+        # os.environ
         'default': env.db(),
     }
 
     # Make sure we use have all settings we need
     # DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
-    DATABASES['default']['TEST'] = {'NAME': os.environ.get("DATABASE_TEST_NAME", None)}
+    DATABASES['default']['TEST'] = {'NAME':
+                                    os.environ.get("DATABASE_TEST_NAME", None)}
     DATABASES['default']['OPTIONS'] = {
         'options': '-c search_path=gis,public,pg_catalog',
         'sslmode': 'require',
@@ -144,16 +145,16 @@ else:
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',  # noqa
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',  # noqa
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',  # noqa
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',  # noqa
     },
 ]
 
@@ -181,7 +182,7 @@ LOGGING = {
             'datefmt': '%H:%M:%S',
         },
         'verbose': {
-            'format': '%(asctime)s %(levelname)-7s %(thread)-5d %(name)s %(filename)s:%(lineno)s | %(funcName)s | %(message)s',
+            'format': '%(asctime)s %(levelname)-7s %(thread)-5d %(name)s %(filename)s:%(lineno)s | %(funcName)s | %(message)s',  # noqa
             'datefmt': '%Y-%m-%d %H:%M:%S',
         },
         'simple': {
@@ -201,8 +202,8 @@ LOGGING = {
             'class': 'django.utils.log.AdminEmailHandler',
         },
         # 'sentry': {
-        #     'level': 'ERROR',  # To capture more than ERROR, change to WARNING, INFO, etc.
-        #     'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+        #     'level': 'ERROR',  # To capture more than ERROR, change to WARNING, INFO, etc.  # noqa
+        #     'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',  # noqa
         #     'tags': {'custom-tag': 'x'},
         # },
     },
@@ -262,7 +263,6 @@ LOGGING = {
         'handlers': ['console'],
     }
 }
-
 
 
 # Static files (CSS, JavaScript, Images)
