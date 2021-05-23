@@ -41,6 +41,7 @@ sqlparse = "0.4.1"
 tekore = "3.7.1"
 toml = "0.10.2"
 urllib3 = "1.26.4"
+psycopg2 = "^2.8.6"
 
 [tool.poetry.dev-dependencies]
 ipython = "^7.23.1"
