@@ -124,12 +124,11 @@ if "DATABASE_URL" in os.environ:  # pragma: no cover
     }
 
     # Make sure we use have all settings we need
-    # DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
     DATABASES['default']['TEST'] = {'NAME':
                                     os.environ.get("DATABASE_TEST_NAME", None)}
     DATABASES['default']['OPTIONS'] = {
         'options': '-c search_path=gis,public,pg_catalog',
-        'sslmode': 'require',
+        # 'sslmode': 'require',
     }
 else:
     DATABASES = {
