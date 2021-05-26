@@ -5,7 +5,7 @@ description = ""
 authors = ["Arnon Cohen <arnon.cohen@mail.huji.ac.il>"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "3.9.5"
 asgiref = "3.3.4"
 attrs = "21.2.0"
 certifi = "2020.12.5"
