@@ -150,6 +150,17 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-basicauth"
+version = "0.5.3"
+description = "Basic auth utilities for Django."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+Django = ">=2.0"
+
+[[package]]
 name = "django-environ"
 version = "0.4.5"
 description = "Django-environ allows you to utilize 12factor inspired environment variables to configure your Django application."
@@ -855,7 +866,7 @@ brotli = ["brotli"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "f2e1430f5816ba38098e4bfbb9f1b555fb05a450eaffd0bbbeb73ecf9b3fc1a3"
+content-hash = "e4ed9c0ef951d4955a05e4bb70dcbabd7dd74f7cbb4834dc7766d2269364c26e"
 
 [metadata.files]
 appnope = [
@@ -970,6 +981,10 @@ defusedxml = [
 django = [
     {file = "Django-3.2.2-py3-none-any.whl", hash = "sha256:18dd3145ddbd04bf189ff79b9954d08fda5171ea7b57bf705789fea766a07d50"},
     {file = "Django-3.2.2.tar.gz", hash = "sha256:0a1d195ad65c52bf275b8277b3d49680bd1137a5f55039a806f25f6b9752ce3d"},
+]
+django-basicauth = [
+    {file = "django-basicauth-0.5.3.tar.gz", hash = "sha256:15e9e366f698f53c71b1e794dafea060f990a2ac556bae6b7330dd25324a091c"},
+    {file = "django_basicauth-0.5.3-py3-none-any.whl", hash = "sha256:e5e47d1acdc1943bedcc1bf673059d6c15e257dfe9eef67a22fb824f79546c0d"},
 ]
 django-environ = [
     {file = "django-environ-0.4.5.tar.gz", hash = "sha256:6c9d87660142608f63ec7d5ce5564c49b603ea8ff25da595fd6098f6dc82afde"},
