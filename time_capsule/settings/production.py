@@ -21,7 +21,7 @@ from .base import *  # noqa
 DEBUG = False
 
 EMAIL_HOST_USER = 'arnon.cohen+time_capsule@mail.huji.ac.il'
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')  # noqa
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 LOGGING['handlers']['console']['formatter'] = 'verbose'  # noqa
