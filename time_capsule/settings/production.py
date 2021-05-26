@@ -20,6 +20,10 @@ from .base import *  # noqa
 
 DEBUG = False
 
+EMAIL_HOST_USER = 'arnon.cohen+time_capsule@mail.huji.ac.il'
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 LOGGING['handlers']['console']['formatter'] = 'verbose'  # noqa
 LOGGING['handlers']['file'] = {  # noqa
     'class': 'logging.handlers.RotatingFileHandler',
