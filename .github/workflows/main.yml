@@ -45,6 +45,7 @@ jobs:
           LASTFM_SHARED_SECRET: ${{ secrets.LASTFM_SHARED_SECRET }}
           BASICAUTH_USERS: ${{ secrets.BASICAUTH_USERS }}
         run: |
+          python manage.py collectstatic --noinput
           pytest
       
       - name: Run Pylama

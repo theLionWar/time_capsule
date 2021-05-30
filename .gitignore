@@ -6,6 +6,10 @@ __pycache__
 db.sqlite3
 media
 
+# collectstatic destination
+time_capsule/static/*
+!time_capsule/static/dummy.txt
+
 
 # Backup files #
 *.bak
@@ -64,3 +68,4 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
