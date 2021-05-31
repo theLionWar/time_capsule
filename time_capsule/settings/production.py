@@ -6,6 +6,8 @@ Put here only things that are shared between all production deployments.
 import logging
 import environ
 from pathlib import Path
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 logging.debug("Settings loading: %s" % __file__)
 
@@ -39,3 +41,18 @@ log_file = Path(LOGGING['handlers']['file']['filename'])  # noqa
 if not log_file.parent.exists():  # pragma: no cover
     logging.info("Creating log directory: {}".format(log_file.parent))
     Path(log_file).parent.mkdir(parents=True)
+
+
+sentry_sdk.init(
+    dsn=os.environ.get('SENTRY_URL'),  # noqa
+    integrations=[DjangoIntegration()],
+
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=1.0,
+
+    # If you wish to associate users to errors (assuming you are using
+    # django.contrib.auth) you may enable sending PII data.
+    send_default_pii=True
+)
