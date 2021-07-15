@@ -50,8 +50,16 @@ class Playlist(UUIDModel, TimeStampMixin):
     provider_urls = JSONField(default=dict)
 
     @property
+    def get_first_provider_name(self):
+        try:
+            return next(iter(self.source_providers.values()))
+        except StopIteration:
+            return ''
+
+    @property
     def name(self):
-        return f'Time Capsule: {str(self.from_date)} - {str(self.to_date)}'
+        return f'Time Capsule: {str(self.from_date)} - {str(self.to_date)} ' \
+               f'({self.get_first_provider_name})'
 
     def __str__(self):
         return f'{self.user.username if self.user else "no user"}: ' \
