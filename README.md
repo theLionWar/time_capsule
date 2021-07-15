@@ -91,6 +91,6 @@ SOFTWARE.
 <!-- Markdown link & img dfn's -->
 [django-image]: https://img.shields.io/static/v1?label=Django&message=3.2&color=blue
 [django-url]: https://docs.djangoproject.com/en/3.2/releases/3.2/
-[github-image]: https://img.shields.io/github/workflow/status/theLionWar/time_capsule/ci
+[github-image]: https://img.shields.io/github/workflow/status/theLionWar/time_capsule/CI
 [github-url]: https://github.com/theLionWar/time_capsule/actions
 
