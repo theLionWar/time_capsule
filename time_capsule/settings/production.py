@@ -35,7 +35,11 @@ LOGGING['handlers']['file'] = {  # noqa
     'level': 'DEBUG',
     'filename': (os.path.join(ROOT_DIR, 'logs', 'website.log')),  # noqa
 }
+
+LOGGING['handlers']['logzio']['token'] = os.environ.get('LOGZIO_KEY')  # noqa
+
 LOGGING['root']['handlers'].append('file')  # noqa
+LOGGING['root']['handlers'].append('logzio')  # noqa
 
 log_file = Path(LOGGING['handlers']['file']['filename'])  # noqa
 if not log_file.parent.exists():  # pragma: no cover
