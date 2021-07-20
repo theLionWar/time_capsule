@@ -1,9 +1,14 @@
+import logging
 import uuid
 from enum import Enum
 
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import fields, JSONField
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+logger = logging.getLogger(__name__)
 
 
 class MusicProviders(str, Enum):
@@ -86,3 +91,9 @@ class TrackPlaylist(models.Model):
 
     class Meta:
         unique_together = ('track', 'playlist')
+
+
+@receiver(post_save, sender=User)
+def send_log_on_user_creation(sender, instance, created, **kwargs):
+    if created:
+        logger.info('user created', extra={'user': instance.id})

@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -5,6 +7,8 @@ from django.urls import reverse
 
 from playlist_creation.forms import PlaylistCreationForm
 from playlist_creation.models import Playlist
+
+logger = logging.getLogger(__name__)
 
 
 def home(request):
@@ -22,6 +26,7 @@ def home(request):
             for error in form.non_field_errors():
                 messages.error(request, error)
     else:
+        logger.info('/home/ was called')
         form = PlaylistCreationForm()
     return render(request, 'home.html', {'form': form})
 

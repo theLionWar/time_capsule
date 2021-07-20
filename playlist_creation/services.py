@@ -207,5 +207,10 @@ def create_playlist_in_target_social_pipeline(backend, user, response, *args,
 
     playlist.status = Playlist.FINISHED_CREATION
     playlist.save()
+    logger.info('playlist created', extra={'user': user.id,
+                                           'first_name': user.first_name,
+                                           'last_name': user.last_name,
+                                           'playlist_id': playlist.id,
+                                           })
 
     kwargs['request'].session['playlist_url'] = playlist_url
