@@ -5,6 +5,7 @@
 __pycache__
 db.sqlite3
 media
+time_capsule/settings/local_settings.py
 
 # collectstatic destination
 time_capsule/static/*

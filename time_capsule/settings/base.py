@@ -191,6 +191,10 @@ LOGGING = {
         'simple': {
             'format': '%(levelname)s %(message)s'
         },
+        'logzioFormat': {
+            'format': '{"additional_field": "value"}',
+            'validate': False
+        }
 
     },
     'handlers': {
@@ -204,11 +208,15 @@ LOGGING = {
             'email_backend': 'django.core.mail.backends.smtp.EmailBackend',
             'class': 'django.utils.log.AdminEmailHandler',
         },
-        # 'sentry': {
-        #     'level': 'ERROR',  # To capture more than ERROR, change to WARNING, INFO, etc.  # noqa
-        #     'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',  # noqa
-        #     'tags': {'custom-tag': 'x'},
-        # },
+        'logzio': {
+            'class': 'logzio.handler.LogzioHandler',
+            'level': 'INFO',
+            'formatter': 'logzioFormat',
+            'token': '-',
+            'logzio_type': 'backend',
+            'logs_drain_timeout': 5,
+            'url': 'https://listener.logz.io:8071'
+        }
     },
     'loggers': {
         'django.request': {
@@ -255,11 +263,6 @@ LOGGING = {
             'handlers': ['console'],
             'propagate': False,
         },
-        # 'sentry.errors': {
-        #     'level': 'DEBUG',
-        #     'handlers': ['console'],
-        #     'propagate': False,
-        # },
     },
     'root': {
         'level': 'DEBUG',

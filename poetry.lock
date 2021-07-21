@@ -317,6 +317,17 @@ qa = ["flake8 (==3.8.3)", "mypy (==0.782)"]
 testing = ["Django (<3.1)", "colorama", "docopt", "pytest (<6.0.0)"]
 
 [[package]]
+name = "logzio-python-handler"
+version = "3.0.0"
+description = "Logging handler to send logs to your Logz.io account with bulk SSL"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+requests = ">=2.23.0"
+
+[[package]]
 name = "matplotlib-inline"
 version = "0.1.2"
 description = "Inline Matplotlib backend for Jupyter"
@@ -894,7 +905,7 @@ brotli = ["brotli"]
 [metadata]
 lock-version = "1.1"
 python-versions = "3.9.5"
-content-hash = "5da372efc967946dfc14f0ee8c88d6fee349fc36d04fc54e14647b190762e949"
+content-hash = "48afb3c0be066286db31fbc68ee14007325a306c4e9cdc29e66df0f6083237f1"
 
 [metadata.files]
 appnope = [
@@ -1061,6 +1072,9 @@ ipython-genutils = [
 jedi = [
     {file = "jedi-0.18.0-py2.py3-none-any.whl", hash = "sha256:18456d83f65f400ab0c2d3319e48520420ef43b23a086fdc05dff34132f0fb93"},
     {file = "jedi-0.18.0.tar.gz", hash = "sha256:92550a404bad8afed881a137ec9a461fed49eca661414be45059329614ed0707"},
+]
+logzio-python-handler = [
+    {file = "logzio-python-handler-3.0.0.tar.gz", hash = "sha256:5dfbd66b8b6a1bac82c3506d3bc809b89df4059b5336310c99cf45da3888a11e"},
 ]
 matplotlib-inline = [
     {file = "matplotlib-inline-0.1.2.tar.gz", hash = "sha256:f41d5ff73c9f5385775d5c0bc13b424535c8402fe70ea8210f93e11f3683993e"},

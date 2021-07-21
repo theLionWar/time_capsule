@@ -7,4 +7,8 @@ from __future__ import absolute_import
 # we should explicitly load the settings file needed,
 # for example in manage.py: os.environ.setdefault('DJANGO_SETTINGS_MODULE',
 # 'time_capsule.settings.production')
-from .local import *  # noqa
+
+try:
+    from .local_settings import *  # noqa
+except ImportError:
+    from .local import *  # noqa

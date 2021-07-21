@@ -27,21 +27,9 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')  # noqa
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 LOGGING['handlers']['console']['formatter'] = 'verbose'  # noqa
-LOGGING['handlers']['file'] = {  # noqa
-    'class': 'logging.handlers.RotatingFileHandler',
-    'formatter': 'verbose',
-    'backupCount': 3,
-    'maxBytes': 4194304,  # 4MB
-    'level': 'DEBUG',
-    'filename': (os.path.join(ROOT_DIR, 'logs', 'website.log')),  # noqa
-}
-LOGGING['root']['handlers'].append('file')  # noqa
-
-log_file = Path(LOGGING['handlers']['file']['filename'])  # noqa
-if not log_file.parent.exists():  # pragma: no cover
-    logging.info("Creating log directory: {}".format(log_file.parent))
-    Path(log_file).parent.mkdir(parents=True)
-
+LOGGING['handlers']['logzio']['token'] = os.environ.get('LOGZIO_KEY')  # noqa
+LOGGING['root']['level'] = 'INFO'  # noqa
+LOGGING['root']['handlers'].append('logzio')  # noqa
 
 sentry_sdk.init(
     dsn=os.environ.get('SENTRY_URL'),  # noqa
