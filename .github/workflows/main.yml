@@ -44,6 +44,8 @@ jobs:
           LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
           LASTFM_SHARED_SECRET: ${{ secrets.LASTFM_SHARED_SECRET }}
           BASICAUTH_USERS: ${{ secrets.BASICAUTH_USERS }}
+          TEST_SPOTIFY_USERNAME: ${{ secrets.TEST_SPOTIFY_USERNAME }}
+          TEST_SPOTIFY_PASSWORD: ${{ secrets.TEST_SPOTIFY_PASSWORD }}
         run: |
           python manage.py collectstatic --noinput
           pytest
