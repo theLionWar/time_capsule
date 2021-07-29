@@ -1,5 +1,6 @@
 import uuid
 import pytest
+from selenium import webdriver
 
 
 @pytest.fixture
@@ -32,3 +33,20 @@ def auto_login_user(db, client, create_user, test_password,
             client.login(username=user.username, password=test_password)
         return client, user
     return make_auto_login
+
+
+# fixture for selenium tests
+@pytest.fixture(scope='session')
+def driver(request):
+    driver = request.config.getoption('--driver', default='chrome')
+    if driver == 'firefox' or driver == 'ff':
+        driver = webdriver.Firefox()
+    elif driver == 'chrome':
+        driver = webdriver.Chrome()
+    else:
+        raise ValueError('invalid driver name: ' + driver)
+    driver.set_window_size(1200, 800)
+    driver.base_url = \
+        request.config.getoption('--url', default='http://localhost:8000')
+    yield driver
+    driver.quit()
