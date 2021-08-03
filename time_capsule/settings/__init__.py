@@ -1,5 +1,6 @@
 # coding=utf-8
 from __future__ import absolute_import
+import os
 
 # When defaults are loaded assume a local development environment
 # All other environments should explicitly choose a right settings
@@ -8,7 +9,8 @@ from __future__ import absolute_import
 # for example in manage.py: os.environ.setdefault('DJANGO_SETTINGS_MODULE',
 # 'time_capsule.settings.production')
 
-try:
-    from .local_settings import *  # noqa
-except ImportError:
-    from .local import *  # noqa
+if os.environ.get('DJANGO_SETTINGS_MODULE') == 'time_capsule.settings':
+    try:
+        from .local_settings import *  # noqa
+    except ImportError:
+        from .local import *  # noqa
