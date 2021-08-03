@@ -32,6 +32,8 @@ DEBUG = env('DEBUG', default=False)
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
+SITE_ID = 1
+
 ALLOWED_HOSTS = []
 
 if 'ALLOWED_HOSTS' in os.environ:
@@ -55,6 +57,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'django.contrib.flatpages',
     'social_django',
     'playlist_creation',
 ]
@@ -70,6 +74,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'playlist_creation.middleware.SocialAuthExceptionNotRaiseMiddleware',
+    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
 ]
 
 ROOT_URLCONF = 'time_capsule.urls'
