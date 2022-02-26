@@ -8,6 +8,7 @@ import pylast
 import tekore as tk
 from django.conf import settings
 from social_core.exceptions import AuthException
+from social_django.models import UserSocialAuth
 
 from playlist_creation.models import Playlist, Track, MusicProviders, \
     TrackPlaylist
@@ -97,7 +98,8 @@ class PlaylistTargetService(abc.ABC):
         ...
 
     @abc.abstractmethod
-    def create_playlist(self, playlist: Playlist) -> str:
+    def create_playlist(self, playlist: Playlist,
+                        social_user: UserSocialAuth) -> str:
         ...
 
 
@@ -105,12 +107,12 @@ class PlaylistTargetService(abc.ABC):
 class SpotifyPlaylistTargetService(PlaylistTargetService):
     PROVIDER: ClassVar[MusicProviders] = MusicProviders.SPOTIFY
 
-    def create_playlist(self, playlist: Playlist) -> str:
+    def create_playlist(self, playlist: Playlist,
+                        social_user: UserSocialAuth) -> str:
         if not playlist.tracks.all():
             logger.warning('Playlist has no tracks',
                            extra={'playlist_id': playlist.id})
             raise Exception('Playlist has no tracks')
-        social_user = playlist.user.social_auth.get(provider='spotify')
         access_token = social_user.extra_data.get('access_token')
         spotify = tk.Spotify(access_token)
 
@@ -153,7 +155,8 @@ class SpotifyPlaylistTargetService(PlaylistTargetService):
 
 def create_playlist_in_target(target: PlaylistTargetService,
                               providers: list[TracksProvider],
-                              playlist: Playlist) -> str:
+                              playlist: Playlist,
+                              social_user: UserSocialAuth) -> str:
 
     tracks: dict[MusicProviders, list[Track]] = \
         {provider.PROVIDER: [] for provider in providers}
@@ -170,7 +173,7 @@ def create_playlist_in_target(target: PlaylistTargetService,
             TrackPlaylist.objects.get_or_create(track=track, playlist=playlist,
                                                 source_provider=provider_enum)
 
-    return target.create_playlist(playlist)
+    return target.create_playlist(playlist, social_user)
 
 
 def create_playlist_in_target_social_pipeline(backend, user, response, *args,
@@ -193,11 +196,16 @@ def create_playlist_in_target_social_pipeline(backend, user, response, *args,
                                      ' please try again')
 
     try:
+        social_user: UserSocialAuth = kwargs.get('social')
+        if social_user.provider != 'spotify':
+            raise Exception('Not a Spotify user. Currently only Spotify auth '
+                            'flow is supported')
         source_providers: list[TracksProvider] = [LastFMTracksProvider(), ]
         playlist_url = \
             create_playlist_in_target(target=SpotifyPlaylistTargetService(),
                                       providers=source_providers,
-                                      playlist=playlist)
+                                      playlist=playlist,
+                                      social_user=social_user)
     except PlaylistCreationException as e:
         raise AuthException(backend, e.message)
     except Exception as e:
