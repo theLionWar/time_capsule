@@ -79,8 +79,9 @@ class HomePage(BasePage):
     year_select = (By.CSS_SELECTOR, 'form #id_year')
     lastfm_user_box = (By.CSS_SELECTOR, 'form #id_lastfm_username')
 
-    spotify_user_box = (By.CSS_SELECTOR, 'form #login-username')
-    spotify_password_box = (By.CSS_SELECTOR, 'form #login-password')
+    spotify_user_box = (By.CSS_SELECTOR, 'input[type=text]#login-username')
+    spotify_password_box = (By.CSS_SELECTOR,
+                            'input[type=password]#login-password')
 
     new_playlist_link = (By.CSS_SELECTOR, '#new_playlist_link')
     new_playlist_headline = (By.CSS_SELECTOR, 'h1')

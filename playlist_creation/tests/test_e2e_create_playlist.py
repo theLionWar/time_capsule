@@ -13,7 +13,9 @@ def setup(driver):
 
 @pytest.mark.skip(reason='in order to run e2e - '
                          'run a local server on 8000 port, '
-                         'and comment out this decorator')
+                         'and comment out this decorator. '
+                         'Instruction to upgrade chromedriver '
+                         'in useful tips file')
 def test_create_playlist(driver, db):
     homePage.fill_and_submit_form()
     homePage.spotify_login()
