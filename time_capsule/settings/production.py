@@ -8,6 +8,7 @@ import environ
 from pathlib import Path
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
 
 logging.debug("Settings loading: %s" % __file__)
 
@@ -33,7 +34,8 @@ LOGGING['root']['handlers'].append('logzio')  # noqa
 
 sentry_sdk.init(
     dsn=os.environ.get('SENTRY_URL'),  # noqa
-    integrations=[DjangoIntegration()],
+    integrations=[DjangoIntegration(),
+                  LoggingIntegration(event_level=logging.WARNING)],
 
     # Set traces_sample_rate to 1.0 to capture 100%
     # of transactions for performance monitoring.
